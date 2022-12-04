@@ -26,22 +26,22 @@ const Home: NextPage = () => {
         ) : session ? (
           <>
             <button
-              className="absolute right-0 top-0 rounded-full bg-violet-200/30 px-4 py-2 hover:bg-violet-200/50"
+              className="right-0 top-0 rounded-full bg-violet-200/30 px-4 py-2 hover:bg-violet-200/50 sm:absolute"
               onClick={() => signOut()}
             >
               Sign Out
             </button>
             <Form />
-            <Messages />
           </>
         ) : (
           <button
-            className="absolute right-0 top-0 rounded-full bg-violet-200/30 px-4 py-2 hover:bg-violet-200/50"
+            className="right-0 top-0 rounded-full bg-violet-200/30 px-4 py-2 hover:bg-violet-200/50 sm:absolute"
             onClick={() => signIn("discord")}
           >
             Sign In with Discord
           </button>
         )}
+        <Messages />
       </main>
     </>
   );
@@ -51,6 +51,21 @@ export default Home;
 
 const Messages = () => {
   const { data: messages, isLoading } = trpc.guestbook.getAll.useQuery();
+  const utils = trpc.useContext();
+  const deleteMessage = trpc.guestbook.deleteMessage.useMutation({
+    onMutate: () => {
+      utils.guestbook.getAll.cancel();
+      const optimisticUpdate = utils.guestbook.getAll.getData();
+
+      if (optimisticUpdate) {
+        utils.guestbook.getAll.setData(undefined, optimisticUpdate);
+      }
+    },
+    onSettled: () => {
+      utils.guestbook.getAll.invalidate();
+    },
+  });
+  const { data: session } = useSession();
 
   if (isLoading) {
     return (
@@ -65,13 +80,25 @@ const Messages = () => {
       {messages.map((msg) => (
         <div
           key={msg.id}
-          className="border-b border-violet-200 py-2 px-4 last:border-none"
+          className="flex gap-4 border-b border-violet-200 py-2 px-4 last:border-none"
         >
-          <p>{msg.message}</p>
-          <p className="flex justify-between text-sm text-neutral-400">
-            <span>{msg.name}</span>
-            <span>{formatDate(msg.createdAt)}</span>
-          </p>
+          {msg.name === session?.user?.name ? (
+            <button
+              className="h-8 w-8 self-center rounded-full border border-rose-400 leading-none hover:bg-rose-400/20"
+              onClick={() => {
+                deleteMessage.mutate({ id: msg.id });
+              }}
+            >
+              &times;
+            </button>
+          ) : null}
+          <div className="grow">
+            <p>{msg.message}</p>
+            <p className="flex justify-between text-sm text-neutral-400">
+              <span>{msg.name}</span>
+              <span>{formatDate(msg.createdAt)}</span>
+            </p>
+          </div>
         </div>
       ))}
     </div>
@@ -83,7 +110,20 @@ const Messages = () => {
 const Form = () => {
   const { data: session } = useSession();
   const [message, setMessage] = useState("");
-  const postMessage = trpc.guestbook.postMessage.useMutation();
+  const utils = trpc.useContext();
+  const postMessage = trpc.guestbook.postMessage.useMutation({
+    onMutate: () => {
+      utils.guestbook.getAll.cancel();
+      const optimisticUpdate = utils.guestbook.getAll.getData();
+
+      if (optimisticUpdate) {
+        utils.guestbook.getAll.setData(undefined, optimisticUpdate);
+      }
+    },
+    onSettled: () => {
+      utils.guestbook.getAll.invalidate();
+    },
+  });
 
   return (
     <form
