@@ -48,7 +48,9 @@ const Home: NextPage = () => {
 export default Home;
 
 const Form = () => {
+  const { data: session } = useSession();
   const [message, setMessage] = useState("");
+  const postMessage = trpc.guestbook.postMessage.useMutation();
 
   return (
     <form
@@ -56,6 +58,12 @@ const Form = () => {
         e.preventDefault();
 
         if (!message.trim()) return;
+
+        postMessage.mutate({
+          name: session?.user?.name as string,
+          message,
+        });
+        setMessage("");
       }}
     >
       <label htmlFor="message" className="pl-4">
