@@ -95,10 +95,10 @@ const Form = () => {
         setMessage("");
       }}
     >
-      <label htmlFor="message" className="pl-4">
+      <label htmlFor="message" className="pl-2">
         Sign the guestbook!
       </label>
-      <div className="flex overflow-hidden rounded-full border border-transparent">
+      <div className="flex gap-2">
         <input
           id="message"
           type="text"
@@ -107,11 +107,11 @@ const Form = () => {
           maxLength={100}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="border-none px-4 py-2 text-neutral-900 outline-none"
+          className="rounded-lg p-2 text-neutral-900 outline-none"
         />
         <button
           type="submit"
-          className="border-none bg-violet-300/30 py-2 pl-3 pr-4 outline-none hover:bg-violet-300/50"
+          className="rounded-lg bg-violet-300/30 py-2 px-4 outline-none hover:bg-violet-300/50"
         >
           Sign
         </button>
