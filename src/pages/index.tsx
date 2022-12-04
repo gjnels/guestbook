@@ -31,6 +31,7 @@ const Home: NextPage = () => {
               Sign Out
             </button>
             <Form />
+            <Messages />
           </>
         ) : (
           <button
@@ -46,6 +47,34 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+const Messages = () => {
+  const { data: messages, isLoading } = trpc.guestbook.getAll.useQuery();
+
+  if (isLoading) {
+    return (
+      <span className="animate-pulse text-center text-violet-400">
+        Loading messages...
+      </span>
+    );
+  }
+
+  return messages && messages.length > 0 ? (
+    <div className="w-full max-w-lg rounded-lg border-2 border-violet-200">
+      {messages.map((msg) => (
+        <div
+          key={msg.id}
+          className="border-b border-violet-200 p-2 last:border-none"
+        >
+          <p>{msg.message}</p>
+          <span className="text-sm text-neutral-400">{msg.name}</span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="italic text-neutral-300">No messages</p>
+  );
+};
 
 const Form = () => {
   const { data: session } = useSession();
