@@ -4,6 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 
 import { trpc } from "../utils/trpc";
 import { useState } from "react";
+import { formatDate } from "../utils/date";
 
 const Home: NextPage = () => {
   const { data: session, status } = useSession();
@@ -18,7 +19,7 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="relative m-4 flex flex-col items-center justify-center gap-4">
+      <main className="relative m-4 flex flex-col items-center justify-center gap-8">
         <h1 className="text-3xl">Guestbook</h1>
         {status === "loading" ? (
           <span className="animate-pulse text-violet-300">Loading...</span>
@@ -64,10 +65,13 @@ const Messages = () => {
       {messages.map((msg) => (
         <div
           key={msg.id}
-          className="border-b border-violet-200 p-2 last:border-none"
+          className="border-b border-violet-200 py-2 px-4 last:border-none"
         >
           <p>{msg.message}</p>
-          <span className="text-sm text-neutral-400">{msg.name}</span>
+          <p className="flex justify-between text-sm text-neutral-400">
+            <span>{msg.name}</span>
+            <span>{formatDate(msg.createdAt)}</span>
+          </p>
         </div>
       ))}
     </div>
